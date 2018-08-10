@@ -45,8 +45,14 @@ function! dart#analyzer(q_args) abort
   if executable('dartanalyzer')
     let path = expand('%:p:gs:\:/:')
     if filereadable(path)
-      let joined_lines = system(printf('dartanalyzer %s %s', a:q_args, shellescape(path)))
-      call s:cexpr('%m (%f\, line %l\, col %c)', joined_lines)
+      let joined_lines = system(printf('dartanalyzer --format=machine %s %s', a:q_args, shellescape(path)))
+      let xlines = []
+      for line in split(joined_lines, "\n")
+        let x = split(line, "|")[3:99]
+        let rest = printf('%s %s %s', x[0], x[1], x[4]) 
+        call add(xlines, rest)
+      endfor
+      call s:cexpr('%f %l %m', xlines)
     else
       call s:error(printf('cannot read a file: "%s"', path))
     endif
